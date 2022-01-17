@@ -1,0 +1,170 @@
+var jDownload = $("#J_download"),
+  jHeaderBtn2 = $("#headerBtn2"),
+  jBtmBtn = $("#j_btm_btn"),
+  jMask = $("#J_mask"),
+  jPopup = $("#J_popup"),
+  jActive = $("#J_active");
+
+var index = {
+  bindEvent: function () {
+    jPopup.on("click", ".popup-close", function () {
+      jMask.hide();
+      jPopup.hide();
+      var clicked = $(this).attr("status");
+      infoc.report({
+        business_index: 189, // pccm_website_pop
+        pop_name: 1,
+        showed: 1,
+        clicked: clicked,
+        link: 0,
+        ver: 1,
+        reserve1: 0,
+        reserve2: "",
+        reserve3: 0,
+        reserve4: 0,
+      });
+    });
+
+    jActive.on("click", function () {
+      var url = $(this).attr("href");
+      infoc.report({
+        business_index: 189, // pccm_website_pop
+        pop_name: 1,
+        showed: 1,
+        clicked: 3,
+        link: 0,
+        ver: 1,
+        reserve1: 0,
+        reserve2: url,
+        reserve3: 0,
+        reserve4: 0,
+      });
+    });
+
+    jDownload.on("click", function () {
+      /* facebook */
+      fbq("trackCustom", "freedownload", {
+        free_download: "free_download",
+      });
+
+      /* google */
+      gtag("event", "conversion", {
+        send_to: "AW-827176442/cfdXCO7L13oQ-uu2igM",
+      });
+    });
+
+    jBtmBtn.on("click", function () {
+      gtag("event", "conversion", {
+        send_to: "AW-827176442/cfdXCO7L13oQ-uu2igM",
+      });
+    });
+  },
+  init: function () {
+    this.bindEvent();
+  },
+};
+
+var infocReport = {
+  show: function () {
+    infoc.report({
+      business_index: 189, // pccm_website_pop
+      pop_name: 1,
+      showed: 1,
+      clicked: 0,
+      link: 0,
+      ver: 1,
+      reserve1: 0,
+      reserve2: "",
+      reserve3: 0,
+      reserve4: 0,
+    });
+  },
+  hide: function () {
+    infoc.report({
+      business_index: 189, // pccm_website_pop
+      pop_name: 1,
+      showed: 2,
+      clicked: 0,
+      link: 0,
+      ver: 1,
+      reserve1: 0,
+      reserve2: "",
+      reserve3: 0,
+      reserve4: 0,
+    });
+  },
+};
+
+$(function () {
+  /*图片懒加载*/
+  $("img[data-original]").lazyload({ threshold: 1000 });
+
+  /* google和facebook */
+  (function () {
+    if (!sessionStorage.getItem("f")) {
+      var f = getQueryString("f") || "";
+      sessionStorage.setItem("f", f);
+    }
+  })();
+
+  /* 是否弹窗 */
+  (function () {
+    if (localStorage.getItem("popup") === "popup") {
+      jMask.hide();
+      jPopup.hide();
+      infocReport.hide();
+    } else {
+      jMask.show();
+      jPopup.show();
+      localStorage.setItem("popup", "popup");
+      infocReport.show();
+    }
+  })();
+
+  index.init();
+});
+
+/**
+ * @param {String} name | 参数名称
+ * @return 参数对应Value
+ */
+function getQueryString(name) {
+  var reg = new RegExp("(^|/?|&)" + name + "=([^&]*)(&|$)", "i");
+  var r = decodeURIComponent(location.href).substr(1).match(reg);
+  if (r != null) return r[2];
+  return null;
+}
+
+/* 根据f参数不同修改下载链接 */
+function diffParamDownload() {
+  var f = ''
+	try {
+		f = sessionStorage.getItem("f").toLowerCase();
+	} catch (err) {
+		console.warn('param f is null', err)
+	}
+  
+	var urlParam = getQueryString("frm");
+  var downloadName = getQueryString("download") || "clean_master_1_1.exe";
+
+  (isurlParam = urlParam && String(urlParam) === "2111"),
+    (isSpread = location.href.indexOf("en-uu") > -1), //是推广链接
+    (attr = isSpread ? "spread" : "default"); //匹配默认下载地址
+
+  downloadObj = {
+    facebook: "https://download.cleanmasterofficial.com/clean_master_41_1.exe",
+    google: "https://download.cleanmasterofficial.com/clean_master_40_1.exe",
+    spread: "https://download.cleanmasterofficial.com/cleanmaster20200608_1_1.exe", //推广软件包
+    default: "https://download.cleanmasterofficial.com/" + downloadName,
+  };
+
+  //设置dom属性
+  function actionDownload(prefix) {
+    jHeaderBtn2.attr("href", downloadObj[prefix || attr]);
+    jDownload.attr("href", downloadObj[prefix || attr]);
+    jBtmBtn.attr("href", downloadObj[prefix || attr]);
+  }
+  isurlParam ? actionDownload("spread") : actionDownload(f);
+}
+
+diffParamDownload();
